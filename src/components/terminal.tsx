@@ -105,7 +105,6 @@ export default function Terminal({ isOpen, setTerminalOpen }: Props) {
               className='text-white bg-transparent outline-none'
               onChange={(e) => {
                 setCommand(e.target.value)
-                setHistoryIndex(null)
               }}
               autoFocus
             />
