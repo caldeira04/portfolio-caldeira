@@ -1,75 +1,26 @@
 import './App.css'
-import AboutMe from './components/aboutme'
-import Projects from './components/projects'
-import TechStack from './components/techstack'
-import Whoami from './components/whoami'
-import Tools from './components/tools'
-import { useEffect, useState } from 'react'
+import Terminal from './components/terminal'
+import { useState } from 'react'
 
 function App() {
-  const [command, setCommand] = useState('')
-  const [scriptStarted, setScriptStarted] = useState(false)
-  const [isAbout, setIsAbout] = useState(false)
-  const [step, setStep] = useState(0)
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (command) {
-      setScriptStarted(true)
-      if (command.trim() === './about.sh') {
-        setIsAbout(true)
-      } else {
-        setIsAbout(false)
-        setTimeout(() => {
-          setScriptStarted(false)
-        }, 1000)
-      }
-    }
-  }
-
-  useEffect(() => {
-    if (!isAbout) return
-    if (step >= 6) return
-    const timeout = setTimeout(() => {
-      setStep(prev => prev + 1)
-    }, 100)
-
-    return () => clearTimeout(timeout)
-  }, [step, isAbout])
+  const [isTerminalOpen, setIsTerminalOpen] = useState(false)
 
   return (
-    <main className='font-geist-mono w-full min-h-screen bg-[url(./assets/bay.JPG)] bg-cover bg-center text-white p-8'>
-      <div className='p-4 bg-black/85 rounded-md shadow-md border-2 border-[#ebbcba]'>
-        {!scriptStarted ? (
-          <form onSubmit={handleSubmit}>
-            <span className='text-green-500'>
-              <span className="text-teal-500">~</span> ❯ <input
-                type='text'
-                placeholder='./about.sh'
-                className='text-white' onChange={(e) => setCommand(e.target.value)}
-                autoFocus
-              />
-            </span>
-          </form>
-
-        ) : isAbout ? (
-          <>
-            {step >= 1 && <Whoami />}
-            {step >= 2 && <><br /><AboutMe /></>}
-            {step >= 3 && <><br /><Tools /></>}
-            {step >= 4 && <><br /><TechStack /></>}
-            {step >= 5 && <><br /><Projects /></>}
-            {step >= 6 && (
-              <>
-                <br />
-                <p>(END)<span className='animate-pulse'>_</span></p>
-              </>
-            )}
-          </>
-        ) : (
-          <p>zsh: command not found: {command}</p>
-        )}
+    <main className={`font-geist-mono w-full min-h-screen bg-[url(./assets/bay.JPG)] bg-cover bg-center text-white p-8 ${isTerminalOpen ? '' : 'flex items-center justify-center'} `}>
+      <div className='flex items-center justify-center'>
+        <button
+          className='p-2 text-white flex flex-col gap-2 items-center justify-center'
+          onClick={() => setIsTerminalOpen(prev => !prev)}
+          hidden={isTerminalOpen}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-square-terminal-icon lucide-square-terminal"><path d="m7 11 2-2-2-2" /><path d="M11 13h4" /><rect width="18" height="18" x="3" y="3" rx="2" ry="2" /></svg>
+          <span>Terminal</span>
+        </button>
       </div>
+      <Terminal
+        isOpen={isTerminalOpen}
+        setTerminalOpen={setIsTerminalOpen}
+      />
     </main>
   )
 }
