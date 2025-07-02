@@ -16,16 +16,16 @@ export const fakeFs: Record<string, FileNode> = {
       'aboutme': {
         type: 'dir',
         children: {
-          'tools': {
-            type: 'dir',
+          'tools.txt': {
+            type: 'file',
             content: <Tools />,
           },
-          'techstack': {
-            type: 'dir',
+          'techstack.txt': {
+            type: 'file',
             content: <TechStack />,
           },
-          'projects': {
-            type: 'dir',
+          'projects.txt': {
+            type: 'file',
             content: <Projects />,
           },
         },

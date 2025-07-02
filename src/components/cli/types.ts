@@ -1,5 +1,5 @@
 export interface CLICommand {
-  run: (args: string[]) => React.ReactNode | string
+  run: (args: string[], registry: Record<string, CLICommand>) => React.ReactNode | string
   description: string
 }
 

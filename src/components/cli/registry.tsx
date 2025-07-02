@@ -36,7 +36,10 @@ export const buildCommandRegistry = ({ cwd, setCwd }: Props): Record<string, CLI
   cd: {
     description: 'muda o diretório atual',
     run: (args: string[]) => {
-      if (!args[0]) return 'cd: missing argument'
+      if (!args[0]) {
+        setCwd('/')
+        return ''
+      }
       const path = resolvePath(cwd, args[0])
       const node = getNode(path)
       if (!node || node.type !== 'dir') return `cd: No such file or directory: ${args[0]}`
@@ -50,7 +53,8 @@ export const buildCommandRegistry = ({ cwd, setCwd }: Props): Record<string, CLI
       if (!args[0]) return 'cat: missing argument'
       const path = resolvePath(cwd, args[0])
       const node = getNode(path)
-      if (!node || node.type !== 'file') return `cat: ${args[0]}: No such file or directory`
+      if (!node) return `cat: ${args[0]}: No such file or directory`
+      if (node.type !== 'file') return `cat: ${args[0]}: Is a directory`
       return node.content
     }
   },
@@ -68,9 +72,9 @@ export const buildCommandRegistry = ({ cwd, setCwd }: Props): Record<string, CLI
   },
   help: {
     description: 'mostra todos os comandos disponíveis',
-    run: (args: string[]) => {
+    run: (args: string[], registry: Record<string, CLICommand>) => {
       if (args.length > 0) return `help: too many arguments`
-      return <CommandHelp />
+      return <CommandHelp registry={registry} />
     }
   },
   exit: {

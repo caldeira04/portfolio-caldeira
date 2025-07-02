@@ -9,8 +9,9 @@ interface Props {
 export default function Terminal({ isOpen, setTerminalOpen }: Props) {
   const [command, setCommand] = useState<string>("")
   const [cwd, setCwd] = useState<string>("/")
+  const [isLoading, setIsLoading] = useState(true)
   const [history, setHistory] = useState<
-    { input: string, output: React.ReactNode | string }[]
+    { isError: boolean, cwd: string, input: string, output: React.ReactNode | string }[]
   >([])
   const terminalRef = useRef<HTMLDivElement>(null)
   const commandRegistry = buildCommandRegistry({ cwd, setCwd })
@@ -39,9 +40,12 @@ export default function Terminal({ isOpen, setTerminalOpen }: Props) {
     }
 
     const found = commandRegistry[cmd]
-    const output = found ? found.run(args) : `zsh: comando não encontrado: ${cmd}`
+    const output = found
+      ? found.run(args, commandRegistry)
+      : `zsh: comando não encontrado: ${cmd}`;
+    const error = found ? false : true
 
-    setHistory(prev => [...prev, { input: command, output }])
+    setHistory(prev => [...prev, { isError: error, cwd: cwd, input: command, output }])
     setCommand("")
   }
 
@@ -62,27 +66,39 @@ export default function Terminal({ isOpen, setTerminalOpen }: Props) {
     })
   })
 
-  if (!isOpen) return null
+  useEffect(() => {
+    if (isOpen) {
+      setIsLoading(true)
+      const timeout = setTimeout(() => {
+        setIsLoading(false)
+      }, 1000)
+      return () => clearTimeout(timeout)
+    }
+  }, [isOpen])
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-      <div ref={terminalRef} className='w-[90vw] h-[80vh] overflow-auto bg-black/85 rounded-md shadow-md border-2 border-[#ebbcba] text-white p-4'>
+  function LoadSsh() {
+    if (isLoading) return <p>ssh: connecting to caldeira@portfolio...</p>
+
+    return (
+      <>
         <p>ssh: connected to caldeira@portfolio</p>
         <p>bem vindo ao meu portfolio!</p>
-        <p>utilize 'help' para ver uma lista de comandos disponíveis</p>
+        <p>utilize ./about.sh para ver o portfolio</p>
+        <p>ou utilize 'help' para ver uma lista de comandos disponíveis</p>
         <p>utilize a tecla Esc ou o comando 'exit' para sair</p>
         <br />
         {history.map((entry, idx) => (
           <div key={idx}>
-            <p className='text-green-500'>
-              <span className="text-teal-500">~</span> ❯ {entry.input}
+            <p className={entry.isError ? 'text-red-500' : 'text-green-500'}>
+              ❯ <span className="font-bold">{entry.input}</span>
             </p>
-            <div>{entry.output}</div>
+            <div><pre>{entry.output}</pre></div>
           </div>
         ))}
+        <br />
         <form onSubmit={handleSubmit}>
           <span className='text-green-500'>
-            <span className="text-teal-500">~</span> ❯ <input
+            <span className="text-teal-500">{cwd}</span> ❯ <input
               type='text'
               placeholder='./about.sh'
               value={command}
@@ -92,6 +108,16 @@ export default function Terminal({ isOpen, setTerminalOpen }: Props) {
             />
           </span>
         </form>
+      </>
+    )
+  }
+
+  if (!isOpen) return null
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+      <div ref={terminalRef} className='w-[90vw] h-[80vh] overflow-auto bg-black/85 rounded-md shadow-md border-2 border-[#ebbcba] text-white p-4'>
+        <LoadSsh />
       </div>
     </div>
   )
