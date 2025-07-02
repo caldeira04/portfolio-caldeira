@@ -1,7 +1,7 @@
 export default function Tools() {
   return (
     <div>
-      <h1 className='font-bold text-green-500'><span className="text-teal-500">~/aboutme</span> ❯ cd tools && ls -la</h1>
+      <h1 className='font-bold text-green-500'>❯ cat tools.txt</h1>
       <ul>
         <li className='list-inside'>
           <div>

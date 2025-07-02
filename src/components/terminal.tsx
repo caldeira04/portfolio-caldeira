@@ -1,9 +1,5 @@
-import { useState, useEffect } from "react"
-import AboutMe from './aboutme'
-import Projects from './projects'
-import TechStack from './techstack'
-import Whoami from './whoami'
-import Tools from './tools'
+import { useEffect, useRef, useState } from "react"
+import { buildCommandRegistry } from "./cli/registry"
 
 interface Props {
   isOpen: boolean
@@ -11,147 +7,92 @@ interface Props {
 }
 
 export default function Terminal({ isOpen, setTerminalOpen }: Props) {
-  const [command, setCommand] = useState('')
-  const [isCommand, setIsCommand] = useState(false)
-  const [scriptStarted, setScriptStarted] = useState(false)
-  const [step, setStep] = useState(0)
-  const availableCommands = [
-    { command: './about.sh', description: 'about me', component: <CommandAboutMe /> },
-    { command: 'exit', description: 'exit terminal', component: null },
-    { command: 'help', description: 'help', component: <CommandList /> },
-  ]
+  const [command, setCommand] = useState<string>("")
+  const [cwd, setCwd] = useState<string>("/")
+  const [history, setHistory] = useState<
+    { input: string, output: React.ReactNode | string }[]
+  >([])
+  const terminalRef = useRef<HTMLDivElement>(null)
+  const commandRegistry = buildCommandRegistry({ cwd, setCwd })
 
-  function CommandList() {
-    return (
-      <>
-        <ul>
-          {availableCommands.map(cmd => (
-            <li key={cmd.command}>{cmd.command} - {cmd.description}</li>
-          ))}
-        </ul>
-        <>
-          <br />
-          <p>(END)<span className='animate-pulse'>_</span></p>
-        </>
-      </>
-    )
+  const parseInput = (input: string) => {
+    const [cmd, ...args] = input.split(/\s+/)
+    return { cmd, args }
   }
 
-  function CommandAboutMe() {
-    return (
-      <>
-        <Whoami />
-        <br />
-        <AboutMe />
-        <br />
-        <Tools />
-        <br />
-        <TechStack />
-        <br />
-        <Projects />
-        <>
-          <br />
-          <p>(END)<span className='animate-pulse'>_</span></p>
-        </>
-      </>
-    )
-  }
-
-  function RenderCommand() {
-    const foundCommand: any = availableCommands.find(cmd => cmd.command === command.trim())
-    if (!foundCommand) return <p>zsh: command not found: {command}</p>
-    return foundCommand.component
-  }
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    const found = availableCommands.find(cmd => cmd.command === command.trim())
-    if (!found) {
-      setIsCommand(false)
-      setScriptStarted(false)
-      setCommand('')
+    const { cmd, args } = parseInput(command)
+    if (cmd === "exit") {
+      setTimeout(() => {
+        setTerminalOpen(false)
+        setHistory([])
+        setCwd('/')
+        setCommand("")
+      }, 100)
+      return
+    }
+    if (cmd === "clear") {
+      setHistory([])
+      setCommand("")
       return
     }
 
-    setIsCommand(true)
-    setScriptStarted(true)
+    const found = commandRegistry[cmd]
+    const output = found ? found.run(args) : `zsh: comando não encontrado: ${cmd}`
 
-    if (command.trim() === 'exit') {
-      setTimeout(() => {
-        setTerminalOpen(false)
-        setScriptStarted(false)
-        setCommand('')
-        setStep(0)
-      }, 300)
-    }
+    setHistory(prev => [...prev, { input: command, output }])
+    setCommand("")
   }
 
   useEffect(() => {
-    if (command.trim() !== './about.sh') return
-    if (step >= 6) return
-    const timeout = setTimeout(() => {
-      setStep(prev => prev + 1)
-    }, 100)
-
-    return () => clearTimeout(timeout)
-  }, [step])
+    if (terminalRef.current) {
+      terminalRef.current.scrollTop = terminalRef.current.scrollHeight
+    }
+  }, [history])
 
   useEffect(() => {
-    const handleKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        console.log('ESCAPE')
-        setScriptStarted(false)
+    window.addEventListener("keydown", e => {
+      if (e.key === "Escape") {
         setTerminalOpen(false)
-        setCommand('')
-        setStep(0)
+        setHistory([])
+        setCwd('/')
+        setCommand("")
       }
-      if (e.key === 'q') {
-        console.log('Q')
-        setScriptStarted(false)
-        setCommand('')
-        setStep(0)
-      }
-      if (!isCommand) {
-        if (e.key === 'Enter') {
-          console.log('ENTER')
-          setScriptStarted(false)
-          setStep(0)
-        }
-        if (e.key === 'ArrowUp') {
-          console.log('UP')
-          setCommand('./about.sh')
-          setStep(prev => prev - 1)
-        }
-      }
-    }
-    window.addEventListener('keydown', handleKey)
-    return () => window.removeEventListener('keydown', handleKey)
-
-  }, [setTerminalOpen])
+    })
+  })
 
   if (!isOpen) return null
 
   return (
-    <div className='p-4 h-96 overflow-auto bg-black/85 rounded-md shadow-md border-2 border-[#ebbcba]'>
-      <p>bem vindo ao meu portfolio!</p>
-      <p>utilize 'help' para ver uma lista de comandos disponíveis</p>
-      <p>utilize a tecla Esc ou o comando 'exit' para sair</p>
-      <br />
-      {scriptStarted ? (
-        <RenderCommand />
-      ) : (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+      <div ref={terminalRef} className='w-[90vw] h-[80vh] overflow-auto bg-black/85 rounded-md shadow-md border-2 border-[#ebbcba] text-white p-4'>
+        <p>ssh: connected to caldeira@portfolio</p>
+        <p>bem vindo ao meu portfolio!</p>
+        <p>utilize 'help' para ver uma lista de comandos disponíveis</p>
+        <p>utilize a tecla Esc ou o comando 'exit' para sair</p>
+        <br />
+        {history.map((entry, idx) => (
+          <div key={idx}>
+            <p className='text-green-500'>
+              <span className="text-teal-500">~</span> ❯ {entry.input}
+            </p>
+            <div>{entry.output}</div>
+          </div>
+        ))}
         <form onSubmit={handleSubmit}>
           <span className='text-green-500'>
             <span className="text-teal-500">~</span> ❯ <input
               type='text'
               placeholder='./about.sh'
               value={command}
-              className='text-white' onChange={(e) => setCommand(e.target.value)}
+              className='text-white bg-transparent outline-none'
+              onChange={(e) => setCommand(e.target.value)}
               autoFocus
             />
           </span>
         </form>
-      )}
+      </div>
     </div>
   )
 }

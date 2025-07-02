@@ -1,7 +1,7 @@
 export default function Projects() {
   return (
     <div>
-      <h1 className='font-bold text-green-500'><span className="text-teal-500">~/aboutme/techstack </span>❯ cd ../projects && ls -la</h1>
+      <h1 className='font-bold text-green-500'>❯ cat projects.txt</h1>
       <ul>
         <li className='list-inside'>
           <div>
