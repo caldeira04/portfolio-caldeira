@@ -17,7 +17,6 @@ export const buildCommandRegistry = ({ cwd, setCwd }: Props): Record<string, CLI
       const paths = args.filter(arg => !arg.startsWith('-'))
       const target = paths[0] ? resolvePath(cwd, paths[0]) : cwd
       const node = getNode(target)
-
       if (!node || node.type !== 'dir') return `"${target}": No such file or directory`
 
       const entries = Object.entries(node.children!)
@@ -30,7 +29,7 @@ export const buildCommandRegistry = ({ cwd, setCwd }: Props): Record<string, CLI
         }).join('\n')
       }
 
-      return entries.map(([name]) => name).join('\n')
+      return entries.map(([name]) => name).join(' ')
     }
   },
   cd: {

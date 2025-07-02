@@ -92,7 +92,7 @@ export default function Terminal({ isOpen, setTerminalOpen }: Props) {
             <p className={entry.isError ? 'text-red-500' : 'text-green-500'}>
               ❯ <span className="font-bold">{entry.input}</span>
             </p>
-            <div><pre>{entry.output}</pre></div>
+            <div><pre className="whitespace-pre-wrap break-words">{entry.output}</pre></div>
           </div>
         ))}
         <br />
@@ -103,7 +103,10 @@ export default function Terminal({ isOpen, setTerminalOpen }: Props) {
               placeholder='./about.sh'
               value={command}
               className='text-white bg-transparent outline-none'
-              onChange={(e) => setCommand(e.target.value)}
+              onChange={(e) => {
+                setCommand(e.target.value)
+                setHistoryIndex(null)
+              }}
               autoFocus
             />
           </span>
@@ -115,8 +118,8 @@ export default function Terminal({ isOpen, setTerminalOpen }: Props) {
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-      <div ref={terminalRef} className='w-[90vw] h-[80vh] overflow-auto bg-black/85 rounded-md shadow-md border-2 border-[#ebbcba] text-white p-4'>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/10 backdrop-blur-sm">
+      <div ref={terminalRef} className='w-[95vw] h-[90vh] overflow-auto bg-black/70 rounded-md shadow-md border-2 border-[#ebbcba] text-white p-4'>
         <LoadSsh />
       </div>
     </div>
