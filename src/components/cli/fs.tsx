@@ -2,7 +2,6 @@ import AboutMe from "../aboutme"
 import Projects from "../projects"
 import TechStack from "../techstack"
 import Tools from "../tools"
-import CommandAboutMe from "./commands/about-sh"
 
 export type FileNode = {
   type: 'file' | 'dir'
@@ -29,9 +28,27 @@ export const fakeFs: Record<string, FileNode> = {
             type: 'file',
             content: <Projects />,
           },
+          'aboutme.txt': {
+            type: 'file',
+            content: <AboutMe />
+
+          },
           'about.sh': {
             type: 'file',
-            content: <CommandAboutMe />,
+            content: `#!/usr/bin/env bash
+
+whoami
+echo
+cat aboutme.txt;
+echo
+cat tools.txt;
+echo
+cat techstack.txt;
+echo
+cat projects.txt;
+echo
+echo "caso tenha se perdido, pode scrollar pra cima pra ver o resto :)"
+`,
           }
         },
       },
