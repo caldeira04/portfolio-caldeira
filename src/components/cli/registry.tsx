@@ -29,7 +29,22 @@ export const buildCommandRegistry = ({ cwd, setCwd }: Props): Record<string, CLI
         }).join('\n')
       }
 
-      return entries.map(([name]) => name).join(' ')
+      return (
+        <div className='flex flex-wrap gap-2'>
+          {entries.map(([name, node]) => {
+            let color = 'text-white'
+
+            if (node.type === 'dir') color = 'text-blue-400'
+            else if (name.endsWith('.sh')) color = 'text-green-500'
+            return (
+              <span key={name} className={color}>
+                {name}
+              </span>
+            )
+          })}
+
+        </div>
+      )
     }
   },
   cd: {

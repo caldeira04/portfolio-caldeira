@@ -1,7 +1,6 @@
 export default function Projects() {
   return (
     <div>
-      <h1 className='font-bold text-green-500'>❯ cat projects.txt</h1>
       <ul>
         <li className='list-inside'>
           <div>

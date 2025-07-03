@@ -2,6 +2,7 @@ import AboutMe from "../aboutme"
 import Projects from "../projects"
 import TechStack from "../techstack"
 import Tools from "../tools"
+import CommandAboutMe from "./commands/about-sh"
 
 export type FileNode = {
   type: 'file' | 'dir'
@@ -28,6 +29,10 @@ export const fakeFs: Record<string, FileNode> = {
             type: 'file',
             content: <Projects />,
           },
+          'about.sh': {
+            type: 'file',
+            content: <CommandAboutMe />,
+          }
         },
       },
     },

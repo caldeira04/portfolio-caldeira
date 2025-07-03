@@ -1,7 +1,6 @@
 export default function AboutMe() {
   return (
     <div>
-      <h1 className='font-bold text-green-500'>❯ cd aboutme && cat about.txt</h1>
       <ul>
         <li className='list-inside'>- desenvolvedor web</li>
         <li className='list-inside'>- estudante de análise e desenvolvimento de sistemas (2024-2026)</li>
